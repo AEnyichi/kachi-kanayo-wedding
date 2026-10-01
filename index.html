@@ -306,16 +306,16 @@
     const guestUuid = crypto.randomUUID();
     const guestCode = 'KK-' + guestUuid.replace(/-/g,'').slice(0,8).toUpperCase();
     const payload = {
-      id: guestUuid,
-      full_name: document.getElementById('fullName').value.trim(),
-      email: getEmail(),
-      phone: document.getElementById('phone').value.trim() || null,
-      attending: document.getElementById('attendance').value === 'true',
-      number_of_guests: 1,
-      guest_names: null,
-      message: document.getElementById('message').value.trim() || null,
-      email_verified: true
-    };
+  full_name: document.getElementById('fullName').value.trim(),
+  email: getEmail(),
+  phone: document.getElementById('phone').value.trim() || null,
+  attending: document.getElementById('attending').value === 'true',
+  number_of_guests: 1,
+  message: document.getElementById('message').value.trim() || null,
+  email_verified: true,
+  guest_id: guestCode,
+  checked_in: false
+};
     const { error } = await supabaseClient.from('rsvps').insert(payload);
     if (error){
       setStatus(error.message || 'Your RSVP could not be saved. Please try again.', 'error');
