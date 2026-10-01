@@ -180,6 +180,7 @@
     <h3>RSVP Confirmed</h3>
     <p>Your unique guest QR code is below. Please keep it for check-in.</p>
     <canvas id="guestQr" width="220" height="220"></canvas>
+    <button id="downloadQr" type="button" class="submit secondary" style="margin-top:12px;">DOWNLOAD QR CODE</button>
     <div id="guestId" class="guest-id"></div>
   </div>
 </form></section>
@@ -326,7 +327,7 @@
     if (qrConfirmation && guestQr && window.QRCode) {
       qrConfirmation.hidden = false;
       guestIdEl.textContent = guestCode;
-      await QRCode.toCanvas(guestQr, guestUuid, { width: 220, margin: 1 });
+      await QRCode.toCanvas(guestQr, guestCode, { width: 220, margin: 1 });
     }
     rsvp.reset();
     document.getElementById('guests').value = '1';
@@ -343,6 +344,18 @@
 document.addEventListener('DOMContentLoaded', function () {
   const field = document.getElementById('guests');
   if (field) { field.innerHTML = '<option value="1" selected>1 Guest</option>'; field.value = '1'; field.disabled = true; }
+  const downloadQr = document.getElementById('downloadQr');
+if (downloadQr) {
+  downloadQr.addEventListener('click', function () {
+    const canvas = document.getElementById('guestQr');
+    if (!canvas) return;
+
+    const link = document.createElement('a');
+    link.download = 'Kachi-Kanayo-Guest-QR.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  });
+}
 });
 </script>
 </body></html>
