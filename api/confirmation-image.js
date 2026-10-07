@@ -24,71 +24,89 @@ export default async function handler(req, res) {
       await templateResponse.arrayBuffer()
     );
 
+    /*
+      Generate the guest QR code
+    */
     const qrBuffer = await QRCode.toBuffer(guestId, {
-      width: 360,
+      width: 330,
       margin: 1,
       errorCorrectionLevel: "H"
     });
 
-    const qrImage = await sharp(qrBuffer)
-      .resize(360, 360)
-      .png()
-      .toBuffer();
-
-    const image = sharp(templateBuffer);
-    const metadata = await image.metadata();
-
-    const width = metadata.width || 1080;
+    /*
+      The RSVP artwork is 1080 × 1350.
+    */
+    const width = 1080;
+    const height = 1350;
 
     /*
-      The template is designed at 1080 × 1350.
-      QR is placed inside the white QR area.
-      Guest name and ID are overlaid onto the card.
+      QR position
+      This sits inside the existing white QR frame.
     */
+    const qrLeft = 375;
+    const qrTop = 775;
 
-    const qrLeft = Math.round(width * 0.30);
-    const qrTop = Math.round((metadata.height || 1350) * 0.59);
-
+    /*
+      Text overlay.
+      We cover only the placeholder text areas,
+      then add the personalized information.
+    */
     const textSvg = `
-      <svg width="${width}" height="${metadata.height || 1350}">
-        <style>
-          .name {
-            font-family: Georgia, serif;
-            font-size: 34px;
-            fill: #8a6a2f;
-            text-anchor: middle;
-          }
+      <svg width="${width}" height="${height}">
 
-          .guestId {
-            font-family: Arial, sans-serif;
-            font-size: 24px;
-            fill: #8a6a2f;
-            text-anchor: middle;
-          }
-        </style>
+        <!-- Cover the existing guest-name placeholder -->
+        <rect
+          x="245"
+          y="545"
+          width="590"
+          height="85"
+          fill="#f8f0df"
+          opacity="0.96"
+        />
 
+        <!-- Guest name -->
         <text
-          x="${width / 2}"
-          y="${Math.round((metadata.height || 1350) * 0.43)}"
-          class="name"
+          x="540"
+          y="610"
+          text-anchor="middle"
+          font-family="Georgia, 'Times New Roman', serif"
+          font-size="48"
+          font-style="italic"
+          fill="#805622"
         >
-          ${escapeXml(name)}
+          Dear ${escapeXml(name)}
         </text>
 
+        <!-- Cover the existing Guest ID placeholder -->
+        <rect
+          x="340"
+          y="1085"
+          width="400"
+          height="75"
+          fill="#f8f0df"
+          opacity="0.96"
+        />
+
+        <!-- Guest ID -->
         <text
-          x="${width / 2}"
-          y="${Math.round((metadata.height || 1350) * 0.84)}"
-          class="guestId"
+          x="540"
+          y="1135"
+          text-anchor="middle"
+          font-family="Georgia, 'Times New Roman', serif"
+          font-size="34"
+          font-weight="bold"
+          fill="#805622"
         >
           ${escapeXml(guestId)}
         </text>
+
       </svg>
     `;
 
-    const result = await image
+    const result = await sharp(templateBuffer)
       .composite([
         {
-          input: qrImage,
+          input: qrBuffer,
           left: qrLeft,
           top: qrTop
         },
