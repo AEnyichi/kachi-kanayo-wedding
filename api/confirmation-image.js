@@ -24,81 +24,70 @@ export default async function handler(req, res) {
       await templateResponse.arrayBuffer()
     );
 
-    /*
-      Generate the guest QR code
-    */
+    /* Generate QR code */
     const qrBuffer = await QRCode.toBuffer(guestId, {
       width: 330,
       margin: 1,
       errorCorrectionLevel: "H"
     });
 
-    /*
-      The RSVP artwork is 1080 × 1350.
-    */
     const width = 1080;
     const height = 1350;
 
     /*
-      QR position
-      This sits inside the existing white QR frame.
-    */
-    const qrLeft = 375;
-    const qrTop = 775;
-
-    /*
-      Text overlay.
-      We cover only the placeholder text areas,
-      then add the personalized information.
+      SVG text layer.
+      Use a standard sans-serif font so Sharp/libvips
+      can render the text reliably.
     */
     const textSvg = `
-      <svg width="${width}" height="${height}">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="${width}"
+        height="${height}"
+        viewBox="0 0 ${width} ${height}"
+      >
 
-        <!-- Cover the existing guest-name placeholder -->
+        <!-- Cover guest name placeholder -->
         <rect
           x="245"
-          y="545"
+          y="535"
           width="590"
-          height="85"
+          height="95"
+          rx="8"
           fill="#f8f0df"
-          opacity="0.96"
         />
 
         <!-- Guest name -->
         <text
           x="540"
-          y="610"
+          y="600"
           text-anchor="middle"
-          font-family="Georgia, 'Times New Roman', serif"
-          font-size="48"
-          font-style="italic"
+          font-family="DejaVu Sans, Arial, sans-serif"
+          font-size="46"
+          font-weight="600"
           fill="#805622"
-        >
-          Dear ${escapeXml(name)}
-        </text>
+        >Dear ${escapeXml(name)}</text>
 
-        <!-- Cover the existing Guest ID placeholder -->
+        <!-- Cover Guest ID placeholder -->
         <rect
-          x="340"
-          y="1085"
-          width="400"
-          height="75"
+          x="320"
+          y="1080"
+          width="440"
+          height="90"
+          rx="8"
           fill="#f8f0df"
-          opacity="0.96"
         />
 
         <!-- Guest ID -->
         <text
           x="540"
-          y="1135"
+          y="1140"
           text-anchor="middle"
-          font-family="Georgia, 'Times New Roman', serif"
+          font-family="DejaVu Sans, Arial, sans-serif"
           font-size="34"
-          font-weight="bold"
+          font-weight="700"
           fill="#805622"
-        >
-          ${escapeXml(guestId)}
-        </text>
+        >${escapeXml(guestId)}</text>
 
       </svg>
     `;
@@ -107,8 +96,8 @@ export default async function handler(req, res) {
       .composite([
         {
           input: qrBuffer,
-          left: qrLeft,
-          top: qrTop
+          left: 375,
+          top: 775
         },
         {
           input: Buffer.from(textSvg),
