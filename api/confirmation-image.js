@@ -47,33 +47,48 @@ export default async function handler(req, res) {
     const safeName = escapeXml(name);
     const safeGuestId = escapeXml(guestId);
 
-    const textSvg = `
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="${width}"
-        height="${height}"
-        viewBox="0 0 ${width} ${height}"
-      >
-        <text
-          x="540"
-          y="600"
-          text-anchor="middle"
-          font-family="Noto Sans"
-          font-size="32"
-          fill="#594323"
-        >Dear ${safeName},</text>
+   const textSvg = `
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="${width}"
+    height="${height}"
+    viewBox="0 0 ${width} ${height}"
+  >
+    <rect
+      x="245"
+      y="535"
+      width="590"
+      height="95"
+      fill="#f7efdf"
+    />
 
-        <text
-          x="540"
-          y="1140"
-          text-anchor="middle"
-          font-family="Noto Sans"
-          font-size="30"
-          fill="#594323"
-        >${safeGuestId}</text>
-      </svg>
-    `;
+    <text
+      x="540"
+      y="590"
+      text-anchor="middle"
+      font-family="Noto Sans"
+      font-size="30"
+      fill="#594323"
+    >Dear ${safeName},</text>
 
+    <rect
+      x="320"
+      y="1080"
+      width="440"
+      height="90"
+      fill="#f7efdf"
+    />
+
+    <text
+      x="540"
+      y="1140"
+      text-anchor="middle"
+      font-family="Noto Sans"
+      font-size="30"
+      fill="#594323"
+    >${safeGuestId}</text>
+  </svg>
+`;
     const textBuffer = new Resvg(textSvg, {
       font: {
         fontFiles: [fontPath],
