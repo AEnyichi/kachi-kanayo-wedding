@@ -59,7 +59,7 @@ export default async function handler(req, res) {
       y="535"
       width="590"
       height="95"
-      fill="#f7efdf"
+    fill="#f7efdf" fill-opacity="0.88"
     />
 
     <text
@@ -76,7 +76,7 @@ export default async function handler(req, res) {
       y="1080"
       width="440"
       height="90"
-      fill="#f7efdf"
+  fill="#f7efdf" fill-opacity="0.88"
     />
 
     <text
