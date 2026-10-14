@@ -14,8 +14,7 @@ export default async function handler(req, res) {
     }
 
     const templateUrl =
-      "https://raw.githubusercontent.com/AEnyichi/kachi-kanayo-wedding/main/images/rsvp-confirmation-template.png";
-
+    "https://raw.githubusercontent.com/AEnyichi/kachi-kanayo-wedding/main/images/rsvp-confirmation-template-new.png";
     const templateResponse = await fetch(templateUrl);
 
     if (!templateResponse.ok) {
