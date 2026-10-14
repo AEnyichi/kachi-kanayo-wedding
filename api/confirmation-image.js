@@ -58,12 +58,12 @@ export default async function handler(req, res) {
 
         <text
           x="${width / 2}"
-         y="${height * 0.535}"
+         y="${height * 0.49}"
           text-anchor="middle"
           font-family="Noto Sans"
           font-size="${Math.round(width * 0.027)}"
           fill="#594323">
-          Dear ${safeName},
+          ${safeName}
         </text>
 
         <text
