@@ -53,34 +53,21 @@ export default async function handler(req, res) {
     height="${height}"
     viewBox="0 0 ${width} ${height}"
   >
-    <rect
-      x="245"
-      y="535"
-      width="590"
-      height="95"
-    fill="#f7efdf" fill-opacity="0.88"
-    />
+    
 
     <text
       x="540"
-      y="590"
+      y="515"
       text-anchor="middle"
       font-family="Noto Sans"
       font-size="30"
       fill="#594323"
     >Dear ${safeName},</text>
 
-    <rect
-      x="320"
-      y="1080"
-      width="440"
-      height="90"
-  fill="#f7efdf" fill-opacity="0.88"
-    />
-
+   
     <text
       x="540"
-      y="1140"
+      y="1080"
       text-anchor="middle"
       font-family="Noto Sans"
       font-size="30"
