@@ -1,5 +1,7 @@
 import QRCode from "qrcode";
 import sharp from "sharp";
+import fs from "fs";
+import path from "path";
 
 export default async function handler(req, res) {
   try {
@@ -24,7 +26,16 @@ export default async function handler(req, res) {
       await templateResponse.arrayBuffer()
     );
 
-    /* Generate QR code */
+    // Load the font uploaded to GitHub
+    const fontPath = path.join(
+      process.cwd(),
+      "fonts",
+      "NotoSans-Regular.ttf"
+    );
+
+    const fontBuffer = fs.readFileSync(fontPath);
+
+    // Generate the guest QR code
     const qrBuffer = await QRCode.toBuffer(guestId, {
       width: 330,
       margin: 1,
@@ -34,11 +45,9 @@ export default async function handler(req, res) {
     const width = 1080;
     const height = 1350;
 
-    /*
-      SVG text layer.
-      Use a standard sans-serif font so Sharp/libvips
-      can render the text reliably.
-    */
+    // Embed the actual font as a data URL inside the SVG
+    const fontBase64 = fontBuffer.toString("base64");
+
     const textSvg = `
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -46,8 +55,19 @@ export default async function handler(req, res) {
         height="${height}"
         viewBox="0 0 ${width} ${height}"
       >
+        <defs>
+          <style>
+            @font-face {
+              font-family: 'GuestFont';
+              src: url(data:font/ttf;base64,${fontBase64})
+                   format('truetype');
+            }
+            text {
+              font-family: 'GuestFont';
+            }
+          </style>
+        </defs>
 
-        <!-- Cover guest name placeholder -->
         <rect
           x="245"
           y="535"
@@ -57,18 +77,14 @@ export default async function handler(req, res) {
           fill="#f8f0df"
         />
 
-        <!-- Guest name -->
         <text
           x="540"
           y="600"
           text-anchor="middle"
-          font-family="DejaVu Sans, Arial, sans-serif"
           font-size="46"
-          font-weight="600"
           fill="#805622"
         >Dear ${escapeXml(name)}</text>
 
-        <!-- Cover Guest ID placeholder -->
         <rect
           x="320"
           y="1080"
@@ -78,17 +94,14 @@ export default async function handler(req, res) {
           fill="#f8f0df"
         />
 
-        <!-- Guest ID -->
         <text
           x="540"
           y="1140"
           text-anchor="middle"
-          font-family="DejaVu Sans, Arial, sans-serif"
           font-size="34"
-          font-weight="700"
+          font-weight="bold"
           fill="#805622"
         >${escapeXml(guestId)}</text>
-
       </svg>
     `;
 
