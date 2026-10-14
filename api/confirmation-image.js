@@ -30,25 +30,27 @@ export default async function handler(req, res) {
     const width = metadata.width;
     const height = metadata.height;
 
-    const safeName = String(name)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&apos;");
+    const escapeXml = (value) =>
+      String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
 
-    const safeGuestId = String(guestId)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&apos;");
+    const safeName = escapeXml(name);
+    const safeGuestId = escapeXml(guestId);
 
     const fontPath = path.join(
       process.cwd(),
       "fonts",
       "NotoSans-Regular.ttf"
     );
+
+    // Keep the guest's name beneath the existing "Dear" text.
+    // Keep the Guest ID separate from the QR code.
+    const nameY = Math.round(height * 0.535);
+    const guestIdY = Math.round(height * 0.815);
 
     const textSvg = `
       <svg xmlns="http://www.w3.org/2000/svg"
@@ -58,23 +60,19 @@ export default async function handler(req, res) {
 
         <text
           x="${width / 2}"
-        y="${height * 0.80}"
+          y="${nameY}"
           text-anchor="middle"
           font-family="Noto Sans"
           font-size="${Math.round(width * 0.027)}"
-          fill="#594323">
-          ${safeName}
-        </text>
+          fill="#594323">${safeName}</text>
 
         <text
           x="${width / 2}"
-         y="${height * 0.49}"
+          y="${guestIdY}"
           text-anchor="middle"
           font-family="Noto Sans"
-          font-size="${Math.round(width * 0.025)}"
-          fill="#594323">
-          ${safeGuestId}
-        </text>
+          font-size="${Math.round(width * 0.021)}"
+          fill="#594323">Guest ID: ${safeGuestId}</text>
 
       </svg>
     `;
@@ -88,9 +86,10 @@ export default async function handler(req, res) {
       }
     }).render().asPng();
 
+    // Generate a smaller QR code to fit within the gold frame.
     const qrSize = Math.round(
-  Math.min(width * 0.22, height * 0.15)
- );
+      Math.min(width * 0.22, height * 0.15)
+    );
 
     const qrBuffer = await QRCode.toBuffer(
       String(guestId),
@@ -102,8 +101,9 @@ export default async function handler(req, res) {
       }
     );
 
+    // Centre the QR code horizontally and position it in its frame.
     const qrLeft = Math.round((width - qrSize) / 2);
- const qrTop = Math.round(height * 0.63);
+    const qrTop = Math.round(height * 0.635);
 
     const finalImage = await sharp(templateBuffer)
       .composite([
