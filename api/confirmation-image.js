@@ -58,7 +58,7 @@ export default async function handler(req, res) {
 
         <text
           x="${width / 2}"
-         y="${height * 0.49}"
+        y="${height * 0.80}"
           text-anchor="middle"
           font-family="Noto Sans"
           font-size="${Math.round(width * 0.027)}"
@@ -68,7 +68,7 @@ export default async function handler(req, res) {
 
         <text
           x="${width / 2}"
-          y="${height * 0.835}"
+         y="${height * 0.49}"
           text-anchor="middle"
           font-family="Noto Sans"
           font-size="${Math.round(width * 0.025)}"
@@ -89,8 +89,8 @@ export default async function handler(req, res) {
     }).render().asPng();
 
     const qrSize = Math.round(
-      Math.min(width * 0.28, height * 0.19)
-    );
+  Math.min(width * 0.22, height * 0.15)
+ );
 
     const qrBuffer = await QRCode.toBuffer(
       String(guestId),
@@ -103,7 +103,7 @@ export default async function handler(req, res) {
     );
 
     const qrLeft = Math.round((width - qrSize) / 2);
-  const qrTop = Math.round(height * 0.615);
+ const qrTop = Math.round(height * 0.63);
 
     const finalImage = await sharp(templateBuffer)
       .composite([
