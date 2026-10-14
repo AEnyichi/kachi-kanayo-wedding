@@ -49,8 +49,8 @@ export default async function handler(req, res) {
 
     // Keep the guest's name beneath the existing "Dear" text.
     // Keep the Guest ID separate from the QR code.
-    const nameY = Math.round(height * 0.535);
-    const guestIdY = Math.round(height * 0.815);
+    const nameY = Math.round(height * 0.425);
+    const guestIdY = Math.round(height * 0.81);
 
     const textSvg = `
       <svg xmlns="http://www.w3.org/2000/svg"
@@ -103,7 +103,7 @@ export default async function handler(req, res) {
 
     // Centre the QR code horizontally and position it in its frame.
     const qrLeft = Math.round((width - qrSize) / 2);
-    const qrTop = Math.round(height * 0.635);
+    const qrTop = Math.round(height * 0.575);
 
     const finalImage = await sharp(templateBuffer)
       .composite([
