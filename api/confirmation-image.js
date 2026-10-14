@@ -58,7 +58,7 @@ export default async function handler(req, res) {
 
         <text
           x="${width / 2}"
-          y="${height * 0.49}"
+         y="${height * 0.535}"
           text-anchor="middle"
           font-family="Noto Sans"
           font-size="${Math.round(width * 0.027)}"
@@ -103,7 +103,7 @@ export default async function handler(req, res) {
     );
 
     const qrLeft = Math.round((width - qrSize) / 2);
-    const qrTop = Math.round(height * 0.635);
+  const qrTop = Math.round(height * 0.615);
 
     const finalImage = await sharp(templateBuffer)
       .composite([
