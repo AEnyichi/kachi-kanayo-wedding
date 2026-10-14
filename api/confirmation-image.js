@@ -14,20 +14,35 @@ export default async function handler(req, res) {
     }
 
     const templateUrl =
-    "https://raw.githubusercontent.com/AEnyichi/kachi-kanayo-wedding/main/images/rsvp-confirmation-template-new.png";
-    const templateResponse = await fetch(templateUrl);
+      "https://raw.githubusercontent.com/AEnyichi/kachi-kanayo-wedding/main/images/rsvp-confirmation-template-new.png";
 
-    if (!templateResponse.ok) {
-      throw new Error("Could not load RSVP confirmation template");
+    const response = await fetch(templateUrl);
+
+    if (!response.ok) {
+      throw new Error("Could not load the confirmation card template");
     }
 
     const templateBuffer = Buffer.from(
-      await templateResponse.arrayBuffer()
+      await response.arrayBuffer()
     );
 
     const metadata = await sharp(templateBuffer).metadata();
     const width = metadata.width;
     const height = metadata.height;
+
+    const safeName = String(name)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
+
+    const safeGuestId = String(guestId)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
 
     const fontPath = path.join(
       process.cwd(),
@@ -35,46 +50,35 @@ export default async function handler(req, res) {
       "NotoSans-Regular.ttf"
     );
 
-    const escapeXml = (value) =>
-      String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&apos;");
+    const textSvg = `
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="${width}"
+           height="${height}"
+           viewBox="0 0 ${width} ${height}">
 
-    const safeName = escapeXml(name);
-    const safeGuestId = escapeXml(guestId);
+        <text
+          x="${width / 2}"
+          y="${height * 0.49}"
+          text-anchor="middle"
+          font-family="Noto Sans"
+          font-size="${Math.round(width * 0.027)}"
+          fill="#594323">
+          Dear ${safeName},
+        </text>
 
-   const textSvg = `
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="${width}"
-    height="${height}"
-    viewBox="0 0 ${width} ${height}"
-  >
-    
+        <text
+          x="${width / 2}"
+          y="${height * 0.835}"
+          text-anchor="middle"
+          font-family="Noto Sans"
+          font-size="${Math.round(width * 0.025)}"
+          fill="#594323">
+          ${safeGuestId}
+        </text>
 
-    <text
-      x="540"
-      y="515"
-      text-anchor="middle"
-      font-family="Noto Sans"
-      font-size="30"
-      fill="#594323"
-    >Dear ${safeName},</text>
+      </svg>
+    `;
 
-   
-    <text
-      x="540"
-      y="1080"
-      text-anchor="middle"
-      font-family="Noto Sans"
-      font-size="30"
-      fill="#594323"
-    >${safeGuestId}</text>
-  </svg>
-`;
     const textBuffer = new Resvg(textSvg, {
       font: {
         fontFiles: [fontPath],
@@ -84,12 +88,22 @@ export default async function handler(req, res) {
       }
     }).render().asPng();
 
-    const qrBuffer = await QRCode.toBuffer(guestId, {
-      type: "png",
-      width: 330,
-      margin: 1,
-      errorCorrectionLevel: "H"
-    });
+    const qrSize = Math.round(
+      Math.min(width * 0.28, height * 0.19)
+    );
+
+    const qrBuffer = await QRCode.toBuffer(
+      String(guestId),
+      {
+        type: "png",
+        width: qrSize,
+        margin: 1,
+        errorCorrectionLevel: "H"
+      }
+    );
+
+    const qrLeft = Math.round((width - qrSize) / 2);
+    const qrTop = Math.round(height * 0.635);
 
     const finalImage = await sharp(templateBuffer)
       .composite([
@@ -100,8 +114,8 @@ export default async function handler(req, res) {
         },
         {
           input: qrBuffer,
-          left: 375,
-          top: 775
+          left: qrLeft,
+          top: qrTop
         }
       ])
       .png()
@@ -109,6 +123,7 @@ export default async function handler(req, res) {
 
     res.setHeader("Content-Type", "image/png");
     res.setHeader("Cache-Control", "no-store");
+
     return res.status(200).send(finalImage);
 
   } catch (error) {
