@@ -49,7 +49,7 @@ export default async function handler(req, res) {
 
     // Keep the guest's name beneath the existing "Dear" text.
     // Keep the Guest ID separate from the QR code.
-    const nameY = Math.round(height * 0.50);
+  const nameY = Math.round(height * 0.445);
     const guestIdY = Math.round(height * 0.81);
 
     const textSvg = `
