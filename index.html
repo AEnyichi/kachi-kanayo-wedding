@@ -266,7 +266,7 @@
   <div id="qrConfirmation" class="qr-confirmation" hidden>
     <h3>RSVP Confirmed</h3>
     <p>Your unique guest QR code is below. Please keep it for check-in.</p>
-    <canvas id="guestQr" width="220" height="220"></canvas>
+    <div id="guestQr" style="width:220px;height:220px;margin:auto;"></div>
     <div id="guestId" class="guest-id"></div>
     <button class="submit" id="downloadGuestQr" type="button">DOWNLOAD QR CODE</button>
     <div class="notice" id="emailConfirmationStatus" aria-live="polite"></div>
@@ -277,7 +277,7 @@
 <img src="images/kk-logo.png" alt="K&K Logo" style="width:95px;height:95px;object-fit:contain;background:#fffaf4;border-radius:50%;padding:8px;margin-bottom:15px">
 <h2>Kachi & Kanayo</h2><p style="font:10px Arial;letter-spacing:.2em">19 · 12 · 2026</p>
 </footer>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/lib/browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
@@ -434,16 +434,26 @@
   guestIdEl.textContent = guestCode;
 
   try {
-    if (!window.QRCode || typeof window.QRCode.toCanvas !== 'function') {
-      throw new Error('QR code library did not load.');
-    }
+    guestQr.innerHTML = '';
 
-    await window.QRCode.toCanvas(guestQr, guestCode, {
-      width: 220,
-      margin: 2,
-      errorCorrectionLevel: 'H'
+    new QRCode(guestQr, {
+        text: guestCode,
+        width: 220,
+        height: 220,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
     });
 
+    guestQr.style.display = 'block';
+} catch (qrError) {
+    console.error('QR generation error:', qrError);
+
+    if (emailConfirmationStatus) {
+        emailConfirmationStatus.textContent =
+            'Your RSVP is saved, but the QR code could not be displayed. Please check your confirmation email.';
+    }
+}
     guestQr.style.display = 'block';
   } catch (qrError) {
     console.error('QR generation error:', qrError);
