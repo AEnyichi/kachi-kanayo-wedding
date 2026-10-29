@@ -334,18 +334,37 @@
   const otpHelp = document.getElementById('otpHelp');
   let emailVerified = false;
 
-  if (downloadGuestQr) downloadGuestQr.addEventListener('click', function(){
-    if (!guestQr || !guestQr.width) {
-      setStatus('Your QR code is not ready to download yet.', 'error');
+  if (downloadGuestQr) {
+  downloadGuestQr.addEventListener('click', function () {
+    if (!guestQr) {
+      setStatus('The QR code container could not be found.', 'error');
       return;
     }
+
+    const canvas = guestQr.querySelector('canvas');
+    const image = guestQr.querySelector('img');
+    let imageUrl = '';
+
+    if (canvas && canvas.width > 0) {
+      imageUrl = canvas.toDataURL('image/png');
+    } else if (image && image.src) {
+      imageUrl = image.src;
+    }
+
+    if (!imageUrl) {
+      setStatus('Your QR code is not ready yet. Please try again.', 'error');
+      return;
+    }
+
     const link = document.createElement('a');
-    link.href = guestQr.toDataURL('image/png');
+    link.href = imageUrl;
     link.download = (guestIdEl.textContent || 'wedding-guest') + '-QR.png';
+
     document.body.appendChild(link);
     link.click();
     link.remove();
   });
+}
 
   function setStatus(message, type){
     if (!status) return;
@@ -429,39 +448,39 @@
     const guestName = payload.full_name;
     const guestEmail = payload.email;
     setStatus('Thank you! Your RSVP has been saved successfully.', 'success');
-    if (qrConfirmation && guestQr) {
-  qrConfirmation.hidden = false;
-  guestIdEl.textContent = guestCode;
-
-  try {
+  if (qrConfirmation && guestQr) {
+    qrConfirmation.hidden = false;
+    guestIdEl.textContent = guestCode;
     guestQr.innerHTML = '';
 
-    new QRCode(guestQr, {
-        text: guestCode,
-        width: 220,
-        height: 220,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    try {
+        if (typeof QRCode === 'undefined') {
+            throw new Error('The QR code library did not load.');
+        }
 
-    guestQr.style.display = 'block';
-} catch (qrError) {
-    console.error('QR generation error:', qrError);
+        new QRCode(guestQr, {
+            text: guestCode,
+            width: 220,
+            height: 220,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
 
-    if (emailConfirmationStatus) {
-        emailConfirmationStatus.textContent =
-            'Your RSVP is saved, but the QR code could not be displayed. Please check your confirmation email.';
+        guestQr.style.display = 'block';
+
+        if (emailConfirmationStatus) {
+            emailConfirmationStatus.textContent =
+                'Your QR code has been generated. You can download it below.';
+        }
+    } catch (qrError) {
+        console.error('QR generation error:', qrError);
+
+        if (emailConfirmationStatus) {
+            emailConfirmationStatus.textContent =
+                'Your RSVP was saved, but the QR code could not be generated.';
+        }
     }
-}
-    guestQr.style.display = 'block';
-  } catch (qrError) {
-    console.error('QR generation error:', qrError);
-    if (emailConfirmationStatus) {
-      emailConfirmationStatus.textContent =
-        'Your RSVP is saved, but the QR code could not be displayed. Please check your confirmation email.';
-    }
-  }
 }
     // Send the existing Brevo confirmation template after the RSVP is saved.
     if (emailConfirmationStatus) emailConfirmationStatus.textContent = 'Sending your confirmation email…';
