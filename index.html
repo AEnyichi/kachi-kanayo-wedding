@@ -68,6 +68,85 @@
 
 .gift-price{font-family:inherit;font-size:20px;font-weight:600;letter-spacing:.02em;color:#8b5e3c;margin-top:12px!important;margin-bottom:8px!important}
 
+  /* MOBILE RESPONSIVENESS FIX */
+@media screen and (max-width: 768px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  .nav {
+    width: 100%;
+    max-width: 100%;
+    padding: 10px 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .hero {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .hero img,
+  .slide img,
+  .story img,
+  .story-photo img,
+  .gallery img {
+    max-width: 100%;
+  }
+
+  .story-timeline,
+  .story-intro,
+  .gallery,
+  .video-wrap,
+  #details,
+  #registry,
+  #rsvp {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .story-photo {
+    max-width: 100%;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    max-width: 100%;
+  }
+
+  .video-wrap video,
+  .our-film {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #rsvp form {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 </style></head><body><div class="watermark-layer" aria-hidden="true"></div>
 <div class="intro video-intro" id="intro">
   <video id="openingVideo" class="opening-video" autoplay muted playsinline preload="auto">
