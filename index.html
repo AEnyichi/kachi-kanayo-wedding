@@ -147,6 +147,9 @@
   }
 }
 
+
+#downloadGuestQr{display:block;width:100%;max-width:260px;margin:18px auto 0;cursor:pointer}
+#emailConfirmationStatus{font:12px Arial,sans-serif;line-height:1.5;margin-top:12px}
 </style></head><body><div class="watermark-layer" aria-hidden="true"></div>
 <div class="intro video-intro" id="intro">
   <video id="openingVideo" class="opening-video" autoplay muted playsinline preload="auto">
@@ -265,6 +268,8 @@
     <p>Your unique guest QR code is below. Please keep it for check-in.</p>
     <canvas id="guestQr" width="220" height="220"></canvas>
     <div id="guestId" class="guest-id"></div>
+    <button class="submit" id="downloadGuestQr" type="button">DOWNLOAD QR CODE</button>
+    <div class="notice" id="emailConfirmationStatus" aria-live="polite"></div>
   </div>
 </form></section>
 
@@ -324,8 +329,23 @@
   const qrConfirmation = document.getElementById('qrConfirmation');
   const guestQr = document.getElementById('guestQr');
   const guestIdEl = document.getElementById('guestId');
+  const downloadGuestQr = document.getElementById('downloadGuestQr');
+  const emailConfirmationStatus = document.getElementById('emailConfirmationStatus');
   const otpHelp = document.getElementById('otpHelp');
   let emailVerified = false;
+
+  if (downloadGuestQr) downloadGuestQr.addEventListener('click', function(){
+    if (!guestQr || !guestQr.width) {
+      setStatus('Your QR code is not ready to download yet.', 'error');
+      return;
+    }
+    const link = document.createElement('a');
+    link.href = guestQr.toDataURL('image/png');
+    link.download = (guestIdEl.textContent || 'wedding-guest') + '-QR.png';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  });
 
   function setStatus(message, type){
     if (!status) return;
@@ -406,11 +426,32 @@
       submitRsvp.disabled = false;
       return;
     }
+    const guestName = payload.full_name;
+    const guestEmail = payload.email;
     setStatus('Thank you! Your RSVP has been saved successfully.', 'success');
     if (qrConfirmation && guestQr && window.QRCode) {
       qrConfirmation.hidden = false;
       guestIdEl.textContent = guestCode;
-      await QRCode.toCanvas(guestQr, guestUuid, { width: 220, margin: 1 });
+      // Encode the same guest ID shown on the screen and in the confirmation email.
+      await QRCode.toCanvas(guestQr, guestCode, { width: 220, margin: 1, errorCorrectionLevel: 'H' });
+    }
+
+    // Send the existing Brevo confirmation template after the RSVP is saved.
+    if (emailConfirmationStatus) emailConfirmationStatus.textContent = 'Sending your confirmation email…';
+    try {
+      const emailResponse = await fetch('/api/send-rsvp-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: guestEmail, name: guestName, guestId: guestCode })
+      });
+      const emailResult = await emailResponse.json().catch(function(){ return {}; });
+      if (!emailResponse.ok) {
+        throw new Error(emailResult.error || emailResult.message || 'The confirmation email could not be sent.');
+      }
+      if (emailConfirmationStatus) emailConfirmationStatus.textContent = 'Your confirmation email has been sent. Please check your inbox and spam folder.';
+    } catch (emailError) {
+      if (emailConfirmationStatus) emailConfirmationStatus.textContent = 'Your RSVP is saved, but the confirmation email could not be sent right now. Please contact the couple if you need help.';
+      console.error('RSVP confirmation email error:', emailError);
     }
     rsvp.reset();
     document.getElementById('guests').value = '1';
