@@ -429,13 +429,30 @@
     const guestName = payload.full_name;
     const guestEmail = payload.email;
     setStatus('Thank you! Your RSVP has been saved successfully.', 'success');
-    if (qrConfirmation && guestQr && window.QRCode) {
-      qrConfirmation.hidden = false;
-      guestIdEl.textContent = guestCode;
-      // Encode the same guest ID shown on the screen and in the confirmation email.
-      await QRCode.toCanvas(guestQr, guestCode, { width: 220, margin: 1, errorCorrectionLevel: 'H' });
+    if (qrConfirmation && guestQr) {
+  qrConfirmation.hidden = false;
+  guestIdEl.textContent = guestCode;
+
+  try {
+    if (!window.QRCode || typeof window.QRCode.toCanvas !== 'function') {
+      throw new Error('QR code library did not load.');
     }
 
+    await window.QRCode.toCanvas(guestQr, guestCode, {
+      width: 220,
+      margin: 2,
+      errorCorrectionLevel: 'H'
+    });
+
+    guestQr.style.display = 'block';
+  } catch (qrError) {
+    console.error('QR generation error:', qrError);
+    if (emailConfirmationStatus) {
+      emailConfirmationStatus.textContent =
+        'Your RSVP is saved, but the QR code could not be displayed. Please check your confirmation email.';
+    }
+  }
+}
     // Send the existing Brevo confirmation template after the RSVP is saved.
     if (emailConfirmationStatus) emailConfirmationStatus.textContent = 'Sending your confirmation email…';
     try {
